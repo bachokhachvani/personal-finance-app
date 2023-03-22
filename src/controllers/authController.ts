@@ -35,6 +35,9 @@ export const signup = async (req: Request, res: Response) => {
       { expiresIn: "3h" }
     );
 
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
     return res.status(201).json({ token });
   } catch (error) {
     return res.status(500).json({ message: "asdInternal server error" });
