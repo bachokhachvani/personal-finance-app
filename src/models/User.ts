@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from "bcrypt";
 
 export interface IUser extends Document {
   name: string;
@@ -6,6 +7,8 @@ export interface IUser extends Document {
   password: string;
   createdAt: Date;
   updatedAt: Date;
+  passwordResetToken: string | null;
+  passwordResetExpires: Date | null;
 }
 
 const userSchema: Schema = new Schema(
@@ -23,6 +26,8 @@ const userSchema: Schema = new Schema(
       type: String,
       required: true,
     },
+    passwordResetToken: { type: String, default: null },
+    passwordResetExpires: { type: Date, default: null },
   },
   {
     timestamps: true,

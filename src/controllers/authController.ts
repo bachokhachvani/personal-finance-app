@@ -4,6 +4,7 @@ import { IUser } from "../models/User.js";
 import User from "../models/User.js";
 import { validateEmail, validatePassword } from "../utils/validators.js";
 import { Request, Response } from "express";
+import { generatePasswordResetToken } from "../utils/generatePasswordReset.js";
 
 export const signup = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -72,4 +73,31 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
+};
+
+export const passwordRecoveryController = async (
+  req: Request,
+  res: Response
+) => {
+  const { email } = req.body;
+
+  // Find user by email
+  const user = await User.findOne({ email });
+
+  // Check if user exists
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Generate password reset token
+  const token = await generatePasswordResetToken(user);
+
+  // Send password reset email
+  //   await sendPasswordResetEmail(user.email, token);
+
+  // Send success response
+  res.cookie("resetToken", token, {
+    httpOnly: true,
+  });
+  res.json({ message: "Password reset email sent" });
 };
