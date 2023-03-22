@@ -41,4 +41,32 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {};
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const user: IUser | null = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  const match = await bcrypt.compare(password, user.password);
+
+  if (!match) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
+    expiresIn: "3h",
+  });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+  });
+  res.json({ token });
+};
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out successfully" });
+};
