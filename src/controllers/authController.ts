@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser } from "../models/User.js";
 import User from "../models/User.js";
 import { validateEmail, validatePassword } from "../utils/validators.js";
@@ -100,4 +100,25 @@ export const passwordRecoveryController = async (
     httpOnly: true,
   });
   res.json({ message: "Password reset email sent" });
+};
+
+export const getMe = async (req: Request, res: Response) => {
+  const token = req.headers.authorization!.replace("Bearer ", "");
+
+  if (!token) {
+    return res.status(401).json({ message: "there is no token!" });
+  }
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET!);
+
+  console.log("decoded Token:", decodedToken);
+
+  if (typeof decodedToken === "string") {
+    return res.status(401).json({ message: "Authorization token is invalid" });
+  }
+
+  const userId = decodedToken.userId;
+  const user = await User.findOne({ _id: userId });
+
+  res.json({ message: user });
 };
