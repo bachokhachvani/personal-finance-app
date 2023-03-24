@@ -43,10 +43,9 @@ export const createRecord = async (req: AuthRequest, res: Response) => {
       const newRecord = new Record({
         ...record,
       });
-      console.log("asd", newRecord);
 
       await newRecord.save();
-      console.log("sd", newRecord);
+
       res.status(200).json({ message: "new Record is created" });
       return;
     }

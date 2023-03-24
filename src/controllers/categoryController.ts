@@ -49,10 +49,6 @@ export const editCategoryByName = async (req: Request, res: Response) => {
 };
 
 export const getAllCategories = async (req: AuthRequest, res: Response) => {
-  // const userId = req.user!._id;
-
-  // const user = await User.findById(userId);
-
   try {
     const categories = await Category.find();
     res.status(200).json(categories);

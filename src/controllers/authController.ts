@@ -4,7 +4,6 @@ import { IUser } from "../models/User.js";
 import User from "../models/User.js";
 import { validateEmail, validatePassword } from "../utils/validators.js";
 import { Request, Response } from "express";
-import { generatePasswordResetToken } from "../utils/generatePasswordReset.js";
 
 export const signup = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -78,10 +77,8 @@ export const logout = async (req: Request, res: Response) => {
 export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
-  // Find user by email
   const user = await User.findOne({ email });
 
-  // Check if user exists
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
@@ -92,22 +89,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
     expiresIn: "15m",
   });
 
-  // Generate password reset token
   user.passwordResetToken = JWTtoken;
-
-  console.log("asd", user);
-
-  // await user.save();
-
-  // Send password reset email
-  //   await sendPasswordResetEmail(user.email, token);
 
   console.log(
     "link",
     `http://localhost:3000/auth/resetpassword/${user._id}/${JWTtoken}`
   );
 
-  // Send success response
   res.cookie("resetToken", JWTtoken, {
     httpOnly: true,
   });
@@ -118,7 +106,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
 export const resetPasswordGet = async (req: Request, res: Response) => {
   const { id, token } = req.params;
-  console.log(req.params);
 
   const user = await User.findById(id);
 
@@ -155,7 +142,7 @@ export const resetPasswordPost = async (req: Request, res: Response) => {
 
     const hashedPassword: string = await bcrypt.hash(password, 10);
     user.password = hashedPassword;
-    console.log("user", user);
+
     await user.save();
     res.status(200).json({ user });
   } catch (e) {
@@ -171,8 +158,6 @@ export const getMe = async (req: Request, res: Response) => {
   }
 
   const decodedToken = jwt.verify(token, process.env.JWT_SECRET!);
-
-  console.log("decoded Token:", decodedToken);
 
   if (typeof decodedToken === "string") {
     return res.status(401).json({ message: "Authorization token is invalid" });
