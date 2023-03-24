@@ -23,12 +23,8 @@ export const editCategory = async (req: Request, res: Response) => {
   const { name } = req.body;
   const categoryId = req.query.id;
 
-  console.log("asds", req.query);
-
   try {
     const category: ICategory | null = await Category.findById(categoryId);
-
-    console.log("asd", category);
 
     if (!category) {
       res.status(400).json({ message: `category with this ID doesn't exists` });
