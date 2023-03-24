@@ -1,9 +1,8 @@
-import { IRecord } from "../models/Record.js";
 import { Request, Response } from "express";
 import Record from "../models/Record.js";
 import Category from "../models/Category.js";
-import { ICategory } from "../models/Category.js";
 import mongoose from "mongoose";
+import User from "../models/User.js";
 
 interface AuthRequest extends Request {
   user?: {
@@ -60,7 +59,6 @@ export const createRecord = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    console.log("asd", findCategory._id);
     const newRecord = new Record({
       ...record,
       category: findCategory._id,
@@ -71,5 +69,31 @@ export const createRecord = async (req: AuthRequest, res: Response) => {
     res.status(200).json({ message: "new Record is created" });
   } catch (e) {
     res.status(500).json({ message: "server error" });
+  }
+};
+
+export const getRecords = async (req: AuthRequest, res: Response) => {
+  const userId = req.user!._id;
+  const userIdObject = new mongoose.Types.ObjectId(userId);
+  try {
+    // const user = await User.findById(userId)
+    //   .populate("records")
+    //   .exec((err, user) => {
+    //     if (err) {
+    //       return res.status(500).json({ message: err.message });
+    //     }
+    //     if (!user) {
+    //       return res.status(404).json({ message: "User not found" });
+    //     }
+    //     res.status(200).json({ user });
+    //   });
+    // res.status(200).json({ data: user });
+    const user = await User.findById(userId).populate("records").exec();
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ records: user.records });
+  } catch (err) {
+    return res.status(500).json({ message: err });
   }
 };

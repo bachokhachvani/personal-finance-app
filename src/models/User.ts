@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { IRecord } from "./Record.js";
 
 export interface IUser extends Document {
   name: string;
@@ -8,6 +9,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   passwordResetToken: string | null;
   passwordResetExpires: Date | null;
+  records?: IRecord[];
 }
 
 const userSchema: Schema = new Schema(
@@ -32,5 +34,11 @@ const userSchema: Schema = new Schema(
     timestamps: true,
   }
 );
+
+userSchema.virtual("records", {
+  ref: "Record",
+  localField: "_id",
+  foreignField: "user",
+});
 
 export default mongoose.model<IUser>("User", userSchema);
