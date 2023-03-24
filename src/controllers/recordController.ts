@@ -23,7 +23,11 @@ export const createRecord = async (req: AuthRequest, res: Response) => {
         const defaultCategory = new Category({ name: "default" });
 
         await defaultCategory.save();
-        const record = { category: defaultCategory._id, ...req.body };
+        const record = {
+          category: defaultCategory._id,
+          user: userIdObject,
+          ...req.body,
+        };
         const newRecord = new Record({
           ...record,
         });
@@ -31,10 +35,15 @@ export const createRecord = async (req: AuthRequest, res: Response) => {
         res.status(200).json({ message: "new Record is created" });
         return;
       }
-      const record = { category: defaultCategoryExists._id, ...req.body };
+      const record = {
+        category: defaultCategoryExists._id,
+        user: userIdObject,
+        ...req.body,
+      };
       const newRecord = new Record({
         ...record,
       });
+      console.log("asd", newRecord);
 
       await newRecord.save();
       console.log("sd", newRecord);
@@ -80,6 +89,27 @@ export const getRecords = async (req: AuthRequest, res: Response) => {
       .populate({
         path: "records",
         populate: { path: "categoryData" },
+      })
+      .exec();
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ records: user.records });
+  } catch (err) {
+    return res.status(500).json({ message: err });
+  }
+};
+
+export const getFIlteredRecords = async (req: AuthRequest, res: Response) => {
+  const userId = req.user!._id;
+  console.log("req", req.query);
+  try {
+    const user = await User.findById(userId)
+      .populate({
+        path: "records",
+        match: req.query,
       })
       .exec();
 
