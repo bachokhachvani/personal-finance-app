@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.post("/create", authMiddleware, createCategory);
 router.patch("/edit", authMiddleware, editCategoryByName);
-router.get("/all", getAllCategories);
+router.get("/all", authMiddleware, getAllCategories);
 
 export default router;
