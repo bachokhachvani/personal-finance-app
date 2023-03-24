@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICategory extends Document {
+  includes(arg0: string): unknown;
   name: string;
 }
 

@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { IRecord } from "./Record.js";
+import { ICategory } from "./Category.js";
 
 export interface IUser extends Document {
   name: string;
@@ -10,6 +11,7 @@ export interface IUser extends Document {
   passwordResetToken: string | null;
   passwordResetExpires: Date | null;
   records?: IRecord[];
+  categoryData: ICategory;
 }
 
 const userSchema: Schema = new Schema(

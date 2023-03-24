@@ -7,8 +7,9 @@ export interface IRecord extends Document {
   amount: number;
   status: "Processing" | "Completed" | null;
   type: "Expense" | "Income";
-  category: ICategory;
+  category?: ICategory;
   user: IUser;
+  categoryData?: ICategory[];
 }
 
 const recordSchema: Schema = new Schema(
@@ -46,5 +47,11 @@ const recordSchema: Schema = new Schema(
     timestamps: true,
   }
 );
+recordSchema.virtual("categoryData", {
+  ref: "Category",
+  localField: "category",
+  foreignField: "_id",
+  justOne: true,
+});
 
 export default mongoose.model<IRecord>("Record", recordSchema);
