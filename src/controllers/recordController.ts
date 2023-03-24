@@ -3,16 +3,24 @@ import { Request, Response } from "express";
 import Record from "../models/Record.js";
 import Category from "../models/Category.js";
 import { ICategory } from "../models/Category.js";
+import mongoose from "mongoose";
 
-export const createRecord = async (req: Request, res: Response) => {
+interface AuthRequest extends Request {
+  user?: {
+    _id?: string;
+  };
+}
+
+export const createRecord = async (req: AuthRequest, res: Response) => {
   const { category } = req.body;
+  const userId = req.user!._id;
+  const userIdObject = new mongoose.Types.ObjectId(userId);
 
   try {
     if (!category) {
       const defaultCategoryExists = await Category.findOne({ name: "default" });
 
       if (!defaultCategoryExists) {
-        console.log("asd");
         const defaultCategory = new Category({ name: "default" });
 
         await defaultCategory.save();
@@ -51,9 +59,12 @@ export const createRecord = async (req: Request, res: Response) => {
       res.status(404).json({ message: "Income doesn't have status" });
       return;
     }
+
+    console.log("asd", findCategory._id);
     const newRecord = new Record({
       ...record,
       category: findCategory._id,
+      user: userIdObject,
     });
 
     await newRecord.save();
