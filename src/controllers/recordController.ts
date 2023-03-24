@@ -117,6 +117,9 @@ export const getFIlteredRecords = async (req: AuthRequest, res: Response) => {
           },
           ...others,
         },
+        options: {
+          sort: { updatedAt: -1 },
+        },
       })
       .exec();
 
