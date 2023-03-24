@@ -75,10 +75,7 @@ export const logout = async (req: Request, res: Response) => {
   res.json({ message: "Logged out successfully" });
 };
 
-export const passwordRecoveryController = async (
-  req: Request,
-  res: Response
-) => {
+export const forgotPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   // Find user by email
@@ -89,17 +86,81 @@ export const passwordRecoveryController = async (
     return res.status(404).json({ message: "User not found" });
   }
 
+  const secret = process.env.JWT_SECRET! + user.password;
+
+  const JWTtoken = jwt.sign({ userId: user._id }, secret, {
+    expiresIn: "15m",
+  });
+
   // Generate password reset token
-  const token = await generatePasswordResetToken(user);
+  user.passwordResetToken = JWTtoken;
+
+  console.log("asd", user);
+
+  // await user.save();
 
   // Send password reset email
   //   await sendPasswordResetEmail(user.email, token);
 
+  console.log(
+    "link",
+    `http://localhost:3000/auth/resetpassword/${user._id}/${JWTtoken}`
+  );
+
   // Send success response
-  res.cookie("resetToken", token, {
+  res.cookie("resetToken", JWTtoken, {
     httpOnly: true,
   });
-  res.json({ message: "Password reset email sent" });
+  res.json({
+    link: `http://localhost:3000/auth/resetpassword/${user._id}/${JWTtoken}`,
+  });
+};
+
+export const resetPasswordGet = async (req: Request, res: Response) => {
+  const { id, token } = req.params;
+  console.log(req.params);
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    return res.status(404).json({ message: "user doesn't exists" });
+  }
+
+  const secret = process.env.JWT_SECRET! + user.password;
+
+  try {
+    const decodedToken = jwt.verify(token, secret);
+
+    res.status(200).json({ userId: decodedToken });
+  } catch (e) {
+    res.status(500).json({ message: "server error" });
+  }
+};
+
+export const resetPasswordPost = async (req: Request, res: Response) => {
+  const { id, token } = req.params;
+  const { password, password2 } = req.body;
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    return res.status(404).json({ message: "user doesn't exists" });
+  }
+  const secret = process.env.JWT_SECRET! + user.password;
+  try {
+    const decodedToken = jwt.verify(token, secret);
+    if (!password === password2) {
+      return res.json({ message: "passwords doesn't match" });
+    }
+
+    const hashedPassword: string = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    console.log("user", user);
+    await user.save();
+    res.status(200).json({ user });
+  } catch (e) {
+    res.status(500).json({ message: e });
+  }
 };
 
 export const getMe = async (req: Request, res: Response) => {
