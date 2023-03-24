@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { IUser } from "../models/User.js";
 
 interface AuthRequest extends Request {
-  user: IUser;
+  user?: IUser;
 }
 
 export const authMiddleware = (
