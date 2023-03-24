@@ -104,12 +104,19 @@ export const getRecords = async (req: AuthRequest, res: Response) => {
 
 export const getFIlteredRecords = async (req: AuthRequest, res: Response) => {
   const userId = req.user!._id;
-  console.log("req", req.query);
+  const { startDate, endDate, ...others } = req.query;
+
   try {
     const user = await User.findById(userId)
       .populate({
         path: "records",
-        match: req.query,
+        match: {
+          updatedAt: {
+            $gte: new Date(startDate as string),
+            $lte: new Date(endDate as string),
+          },
+          ...others,
+        },
       })
       .exec();
 
